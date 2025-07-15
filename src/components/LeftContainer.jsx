@@ -8,7 +8,7 @@ const LeftContainer = () => {
             style={{
                 width: '200px',
                 height: '400px',
-                backgroundColor: '#6f8dacff',
+                backgroundColor: '#f8f9fa',
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
                 padding: '0px',
                 borderRadius: '8px',

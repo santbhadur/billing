@@ -15,7 +15,7 @@ function App() {
   return (
     <div>
       <Navbars />
-      <div style={{ display: 'flex',  margin: '0px' }}>
+      <div style={{ display: 'flex',  }}>
         {/* Sidebar */}
         <LeftContainer />
 
