@@ -1,25 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
-export default function Teams() {
+export default function TermsAndConditions() {
+  const [terms, setTerms] = useState('');
+
+  const handleSave = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/terms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: terms }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert('✅ Terms and Conditions saved!');
+      setTerms('');
+      console.log('Saved:', result);
+    } else {
+      alert('❌ ' + result.error);
+    }
+  } catch (err) {
+    console.error('Save error:', err);
+    alert('❌ Failed to save terms');
+  }
+  
+};
+
+
   return (
-    <div>
-      <container style={{ width: '80%'}}>
-        <h5 className="text-center" style={{ marginTop: '-30px' }}>
-        Teams And Condition
-      </h5>
+    <Container
+      className="mt-4"
+      style={{
+        maxWidth: '700px',
+        backgroundColor: '#f8f9fa',
+        padding: '30px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+      }}
+    >
+      <h5 className="text-center mb-4">Terms and Conditions</h5>
+      
       <Form>
-        <Form.Group className="mb-3" controlId="businessName">
-          <Form.Label style={{ fontSize: '20px', fontWeight: 'bold' }}>
-            Teams and Condition
+        <Form.Group controlId="termsTextArea" className="mb-3">
+          <Form.Label style={{ fontSize: '16px', fontWeight: 'bold' }}>
+            Enter Terms and Conditions
           </Form.Label>
-          <Form.Control type="text"    />
+          <Form.Control
+            as="textarea"
+            rows={6}
+            value={terms}
+            onChange={(e) => setTerms(e.target.value)}
+            placeholder="Write your terms and conditions here..."
+          />
         </Form.Group>
-        
-    </Form>
-    </container>
-    </div>
+
+        <Button variant="primary" onClick={handleSave}>
+          Save
+        </Button>
+      </Form>
+    </Container>
   );
 }

@@ -1,0 +1,42 @@
+/* Base styles - desktop default */
+.container-custom {
+  max-width: 600px;
+  margin: auto;
+  padding: 30px;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Tablet: screens up to 992px */
+@media (max-width: 992px) {
+  .container-custom {
+    max-width: 90%;
+    padding: 20px;
+  }
+
+  .flex-row-custom {
+    flex-direction: column !important;
+  }
+
+  .dashboard-box {
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
+}
+
+/* Mobile: screens up to 576px */
+@media (max-width: 576px) {
+  .container-custom {
+    padding: 15px;
+  }
+
+  .dashboard-box h1 {
+    font-size: 1.2rem !important;
+  }
+
+  .btn-fullwidth {
+    width: 100% !important;
+  }
+}
