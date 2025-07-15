@@ -13,7 +13,7 @@ export default function ContactDetails() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/contact-details', {
+      const res = await fetch('https://frontbackend-xi.vercel.app/contact-details', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobileNumber, email }),
