@@ -11,7 +11,7 @@ export default function LogoSignature() {
     formData.append('signature', document.getElementById('signatureUpload').files[0]);
 
     try {
-      const response = await fetch('http://localhost:8000/upload-logo-signature', {
+      const response = await fetch('https://frontbackend-xi.vercel.app/upload-logo-signature', {
         method: 'POST',
         body: formData
       });

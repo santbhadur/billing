@@ -8,7 +8,7 @@ export default function TermsAndConditions() {
 
   const handleSave = async () => {
   try {
-    const response = await fetch('http://localhost:8000/terms', {
+    const response = await fetch('https://frontbackend-xi.vercel.app/terms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: terms }),

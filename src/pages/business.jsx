@@ -20,7 +20,7 @@ const handleChange = (e) => {
 
 const handleSave = async () => {
   try {
-    const response = await fetch('http://localhost:8000/business', {
+    const response = await fetch('https://frontbackend-xi.vercel.app/business', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
