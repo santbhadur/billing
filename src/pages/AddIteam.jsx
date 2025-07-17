@@ -1,26 +1,18 @@
 import React, { useState, useRef } from "react";
 import Form from "react-bootstrap/Form";
 import { Container, Row, Col, Table, Button } from "react-bootstrap";
+import axios from 'axios';
+
 
 // 🆕 Step 1: CSS for print
-const printStyles = `
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    #print-section, #print-section * {
-        visibility: visible;
-    }
-    #print-section {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-    }
-}
-`;
+
 
 const AddIteam = () => {
+const [customerName, setCustomerName] = useState("");
+const [customerMobile, setCustomerMobile] = useState("");
+const [successMessage, setSuccessMessage] = useState("");
+
+
     const [items, setItems] = useState([]);
     const [itemData, setItemData] = useState({
         itemName: "",
@@ -29,6 +21,12 @@ const AddIteam = () => {
         unit: "",
         gst: ""
     });
+    const [billingNumber, setBillingNumber] = useState(1);
+    const [billingDate, setBillingDate] = useState(() => {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    });
+
     const [editIndex, setEditIndex] = useState(null);
 
     const printRef = useRef(); // 🆕 Ref to the printable section
@@ -41,6 +39,23 @@ const AddIteam = () => {
     };
 
     const handleAddItem = () => {
+
+
+        // Reset item fields
+        setItemData({
+            itemName: "",
+            price: "",
+            quantity: "",
+            unit: "",
+            gst: ""
+        });
+
+        // Increment billing number if it's a new invoice
+        if (items.length === 0 && editIndex === null) {
+            setBillingNumber((prev) => prev + 1);
+            setBillingDate(new Date().toISOString().split("T")[0]);
+        }
+
         const { itemName, price, quantity, gst } = itemData;
 
         if (!itemName || !price || !quantity) {
@@ -54,13 +69,19 @@ const AddIteam = () => {
         const amount = baseAmount + gstAmount;
 
         if (editIndex !== null) {
-            const updatedItems = [...items];
-            updatedItems[editIndex] = { ...itemData, amount };
-            setItems(updatedItems);
-            setEditIndex(null);
-        } else {
-            setItems([...items, { ...itemData, amount }]);
-        }
+    const updatedItems = [...items];
+    updatedItems[editIndex] = { ...itemData, amount };
+    setItems(updatedItems);
+    setEditIndex(null);
+    setSuccessMessage("Item updated successfully!");
+} else {
+    setItems([...items, { ...itemData, amount }]);
+    setSuccessMessage("Item added successfully!");
+}
+
+// Clear message after 2 seconds
+setTimeout(() => setSuccessMessage(""), 2000);
+
 
         setItemData({
             itemName: "",
@@ -69,6 +90,14 @@ const AddIteam = () => {
             unit: "",
             gst: ""
         });
+        if (editIndex !== null) {
+            const updatedItems = [...items];
+            updatedItems[editIndex] = { ...itemData, amount };
+            setItems(updatedItems);
+            setEditIndex(null);
+        } else {
+            setItems([...items, { ...itemData, amount }]);
+        }
     };
 
     const handleEdit = (index) => {
@@ -91,36 +120,98 @@ const AddIteam = () => {
         }
     };
 
-    // 🆕 Print handler
-    const handlePrint = () => {
-        window.print();
-    };
+const handleSaveInvoice = async () => {
+  if (!isCustomerInfoValid || items.length === 0) {
+    alert("Please enter customer info and at least one item.");
+    return;
+  }
+
+  const invoiceData = {
+    customerName,
+    customerMobile,
+    billingNumber,
+    billingDate,
+    items
+  };
+
+  try {
+    const res = await axios.post('http://localhost:8000/save-invoice', invoiceData);
+    alert(res.data.message || "Invoice saved successfully!");
+
+    // Optional: Reset form after save
+    setCustomerName("");
+    setCustomerMobile("");
+    setItems([]);
+    setBillingNumber((prev) => prev + 1);
+
+  } catch (err) {
+    console.error("Error saving invoice:", err);
+    alert("Failed to save invoice.");
+  }
+};
+
 
     const totalAmount = items.reduce((acc, item) => acc + item.amount, 0);
+    const isCustomerInfoValid = customerName.trim() !== "" && customerMobile.trim() !== "";
+
 
     return (
         <>
             {/* Inject print styles */}
-            <style>{printStyles}</style>
+
 
             <h1 className="d-flex justify-content-center">Billing</h1>
 
             {/* Form Section (not included in print) */}
             <div className="container mt-1 d-flex justify-content-center">
                 <Form>
+
                     <label>Billing Number</label>
-                    <input type="text" style={{ width: '100px', height: '30px', marginRight: '15px' }} />
+                    <input
+                        type="text"
+                        value={billingNumber}
+                        readOnly
+                        style={{ width: '100px', height: '30px', marginRight: '15px' }}
+                    />
                     <label>Billing Date</label>
-                    <input type="date" style={{ width: '150px', height: '30px', marginRight: '15px' }} />
+                    <input
+                        type="date"
+                        value={billingDate}
+                        readOnly
+                        style={{ width: '150px', height: '30px', marginRight: '15px' }}
+                    />
 
                     <Form.Group className="mb-3">
-                        <Form.Label>Customer Name</Form.Label>
-                        <Form.Control size="sm" type="text" placeholder="Enter Name" style={{ width: '400px' }} />
-                        <Form.Label>Customer Mobile Number</Form.Label>
-                        <Form.Control size="sm" type="text" placeholder="Enter Mobile number" style={{ width: '400px' }} />
-                    </Form.Group>
+  <Form.Label>Customer Name</Form.Label>
+  <Form.Control
+    size="sm"
+    type="text"
+    placeholder="Enter Name"
+    style={{ width: '400px' }}
+    value={customerName}
+    onChange={(e) => setCustomerName(e.target.value)}
+    required
+  />
+
+  <Form.Label>Customer Mobile Number</Form.Label>
+  <Form.Control
+    size="sm"
+    type="text"
+    placeholder="Enter Mobile number"
+    style={{ width: '400px' }}
+    value={customerMobile}
+    onChange={(e) => setCustomerMobile(e.target.value)}
+    required
+  />
+</Form.Group>
+
                 </Form>
             </div>
+             {successMessage && (
+  <div className="alert alert-success text-center" role="alert">
+    {successMessage}
+  </div>
+)}
 
             {/* Printable Section */}
             <div
@@ -146,6 +237,8 @@ const AddIteam = () => {
                             value={itemData.itemName}
                             onChange={handleChange}
                             style={{ width: '400px' }}
+                              disabled={!isCustomerInfoValid}
+
                         />
                         <Form.Label>Price</Form.Label>
                         <Form.Control
@@ -156,6 +249,8 @@ const AddIteam = () => {
                             value={itemData.price}
                             onChange={handleChange}
                             style={{ width: '400px' }}
+                              disabled={!isCustomerInfoValid}
+
                         />
                         <Row className="mt-3">
                             <Col xs={6} md={4}>
@@ -167,6 +262,8 @@ const AddIteam = () => {
                                     placeholder="Enter Quantity"
                                     value={itemData.quantity}
                                     onChange={handleChange}
+                                      disabled={!isCustomerInfoValid}
+
                                 />
                             </Col>
                             <Col xs={6} md={4}>
@@ -176,6 +273,8 @@ const AddIteam = () => {
                                     size="sm"
                                     value={itemData.unit}
                                     onChange={handleChange}
+                                      disabled={!isCustomerInfoValid}
+
                                 >
                                     <option value="">Select Unit</option>
                                     <option value="pcs">Pcs</option>
@@ -189,6 +288,8 @@ const AddIteam = () => {
                                     size="sm"
                                     value={itemData.gst}
                                     onChange={handleChange}
+                                      disabled={!isCustomerInfoValid}
+
                                 >
                                     <option value="">Select GST</option>
                                     <option value="5">5%</option>
@@ -199,13 +300,18 @@ const AddIteam = () => {
 
                         <Row className="mt-4">
                             <Col className="d-flex justify-content-center">
-                                <button type="button" className="btn btn-primary" onClick={handleAddItem}>
+                                <button type="button" className="btn btn-primary" onClick={handleAddItem} 
+                                  disabled={!isCustomerInfoValid}>
                                     {editIndex !== null ? "Update Item" : "Add Item"}
                                 </button>
                             </Col>
                         </Row>
                     </Form.Group>
                 </Form>
+
+               
+
+                
 
                 {items.length > 0 && (
                     <>
@@ -246,10 +352,16 @@ const AddIteam = () => {
                             </tfoot>
                         </Table>
 
-                        {/* 🖨️ Print Button */}
-                        <Button variant="secondary" className="mt-2 align-self-end" onClick={handlePrint}>
-                            Print Invoice
-                        </Button>
+                        <Row className="mt-3 mb-3">
+  <Col className="d-flex justify-content-center">
+    <Button variant="success" onClick={handleSaveInvoice}>
+      Save Invoice
+    </Button>
+  </Col>
+</Row>
+
+
+
                     </>
                 )}
             </div>
